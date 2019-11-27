@@ -132,77 +132,38 @@ fn scan_seqs(_species_to_seq: &mut HashMap<String, String>,
              _species_to_chr: &mut HashMap<String, String>,
              _species_to_strand: &mut HashMap<String, String>,
              _species_to_start: &mut HashMap<String, String>,
-             __pwm_to_score: &HashMap<(char, i32), f64>,
-             __pwm_size: i32,
-             __pwm_name: &str,
+             _pwm_to_score: &HashMap<(char, i32), f64>,
+             _pwm_size: i32,
+             _pwm_name: &str,
              _species_list_vec: &Vec<String>,
              _score_treshold: f64,
              _counter: &mut i32) {
 
-// species -> (chr, motif, pos, score)
+    // species -> (chr, motif, pos, score)
     let mut species_to_motif: HashMap<String, Vec<(String, i32, String, f64, i8)>> = HashMap::new();
 
-// the number of matrix position in the seq
+    // the number of matrix position in the seq
     let mut nb_pwm_pos = 0;
-//iterating over species
+
+    //iterating over species
     for (_species, _seq) in _species_to_seq.iter() {
         let seq_len = _seq.len() as i32;
-        nb_pwm_pos = seq_len - __pwm_size + 1;
+        nb_pwm_pos = seq_len - _pwm_size + 1;
 
 
-// iterating over the sequence
+        // iterating over the sequence
         for seq_pos in 0..nb_pwm_pos {
 
-
-            //to store the corresponding motif
-            let mut _motif = "".to_string();
-            //to store the corresponding motif score
-            let mut _cur_species_pwm_score: f64 = 0.0;
-
-            let mut has_indel: i8 = 0;
-            print!("{}", *_counter);
-            let my_string = format!("{}", *_counter);
-
-            let nb_repeat = my_string.len();
-            print!("{}", "\x08".to_string().repeat(nb_repeat));
-
-            // Computing the motif score at position 'seq_pos'
-            for pwm_pos in 0..__pwm_size - 1 {
-
-                // the shift regarding seq_pos is 'pwm_pos'
-                let nuc_pos = seq_pos as usize + pwm_pos as usize;
-
-                // get the corresponding character
-                let seq_char_raw = _seq.chars().nth(nuc_pos).unwrap();
-
-                // add the char to the motif
-                _motif.push_str(&seq_char_raw.to_string());
-
-                // Convert char to lowercase
-                let seq_char_to_low = seq_char_raw.to_lowercase();
-                let seq_char = seq_char_to_low.to_string().chars().next().unwrap();
-
-
-                //Check the char is not '-' or 'n' (N lowercased)
-                if seq_char == '-' || seq_char == 'n' {
-                    _cur_species_pwm_score = 0.0;
-                    has_indel = 1;
-                } else {
-                    // Add the nucleotide score to the motif score
-                    _cur_species_pwm_score += *__pwm_to_score.get(&(seq_char, pwm_pos + 1)).unwrap();
-                }
-            }
-
-            *_counter += 1;
-
-            species_to_motif.entry(_species.to_string()
-            ).or_insert(Vec::new()
-            ).push((
-                _species_to_chr[&_species.to_owned()].clone(),
-                _species_to_start[&_species.to_owned()].parse::<i32>().unwrap() + seq_pos,
-                _motif.clone(),
-                _cur_species_pwm_score,
-                has_indel))
+            compute_score(&seq_pos,
+                          _counter,
+                          _pwm_size,
+                          _pwm_to_score,
+                          &mut species_to_motif,
+                          _species,
+                          &_species_to_chr,
+                          &_species_to_strand,
+                          &_species_to_start,
+                          _seq);
         }
     }
 
@@ -240,3 +201,68 @@ fn scan_seqs(_species_to_seq: &mut HashMap<String, String>,
     }
 }
 
+
+//------------------------
+
+fn compute_score(seq_pos: &i32,
+                 _counter: &mut i32,
+                 _pwm_size:i32,
+                 _pwm_to_score: &HashMap<(char, i32), f64>,
+                 species_to_motif: &mut HashMap<String, Vec<(String, i32, String, f64, i8)>>,
+                 _species: &String,
+                 _species_to_chr: & HashMap<String, String>,
+                 _species_to_strand: & HashMap<String, String>,
+                 _species_to_start: & HashMap<String, String>,
+                _seq:&String){
+
+    //to store the corresponding motif
+    let mut _motif = "".to_string();
+
+    //to store the corresponding motif score
+    let mut _cur_species_pwm_score: f64 = 0.0;
+
+    let mut has_indel: i8 = 0;
+    print!("{}", *_counter);
+    let my_string = format!("{}", *_counter);
+
+    let nb_repeat = my_string.len();
+    print!("{}", "\x08".to_string().repeat(nb_repeat));
+
+    // Computing the motif score at position 'seq_pos'
+    for pwm_pos in 0.._pwm_size - 1 {
+
+        // the shift regarding seq_pos is 'pwm_pos'
+        let nuc_pos = *seq_pos as usize + pwm_pos as usize;
+    
+        // get the corresponding character
+        let seq_char_raw = _seq.chars().nth(nuc_pos).unwrap();
+    
+        // add the char to the motif
+        _motif.push_str(&seq_char_raw.to_string());
+    
+        // Convert char to lowercase
+        let seq_char_to_low = seq_char_raw.to_lowercase();
+        let seq_char = seq_char_to_low.to_string().chars().next().unwrap();
+    
+    
+        //Check the char is not '-' or 'n' (N lowercased)
+        if seq_char == '-' || seq_char == 'n' {
+            _cur_species_pwm_score = 0.0;
+        has_indel = 1;
+        } else {
+            // Add the nucleotide score to the motif score
+            _cur_species_pwm_score += *_pwm_to_score.get(&(seq_char, pwm_pos + 1)).unwrap();
+        }
+    }
+
+    *_counter += 1;
+
+    species_to_motif.entry(_species.to_string()
+    ).or_insert(Vec::new()
+    ).push((
+    _species_to_chr[&_species.to_owned()].clone(),
+    _species_to_start[&_species.to_owned()].parse::<i32>().unwrap() + seq_pos,
+    _motif.clone(),
+    _cur_species_pwm_score,
+    has_indel))
+}
