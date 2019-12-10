@@ -160,11 +160,12 @@ fn scan_seqs(_species_to_seq: &mut HashMap<String, String>,
             let mut _cur_species_pwm_score: f64 = 0.0;
 
             let mut has_indel: i8 = 0;
-            print!("{}", *_counter);
-            let my_string = format!("{}", *_counter);
+            eprint!("--| #Computed motifs: {}", *_counter);
+
+            let my_string = format!("--| #Computed motifs: {}", *_counter);
 
             let nb_repeat = my_string.len();
-            print!("{}", "\x08".to_string().repeat(nb_repeat));
+            eprint!("{}", "\x08".to_string().repeat(nb_repeat));
 
             // Computing the motif score at position 'seq_pos'
             for pwm_pos in 0..__pwm_size - 1 {
