@@ -42,7 +42,7 @@ pub fn read_pwm_as_tab(input_file: &str,
         let re_split = Regex::new(r"\s+").unwrap();
 
         // Loop over the splitted line
-        pwm_size = 1;
+        pwm_size = 0;
 
         for val_str in re_split.split(&line) {
             let _val_num: f64 = val_str.parse().unwrap();
