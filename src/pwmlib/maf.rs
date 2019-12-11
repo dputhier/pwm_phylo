@@ -223,15 +223,20 @@ pub fn process_converted_maf(_pwm_to_score: &HashMap<(char, i32), f64>,
 
                 // check whether score is
                 // greater than threshold
-                let mut mean_score :f64 = 0.0;
-                for sc in _motif_score.clone() {
-                    mean_score += sc;
-                }
-                mean_score = mean_score / _nb_species as f64;
 
-                if mean_score < _score_treshold {
+                let mut to_process = 1;
+                for sc in _motif_score.clone() {
+                    if sc < _score_treshold {
+                        to_process = 0;
+                        break
+
+                    }
+                }
+
+                if to_process == 0 {
                     continue;
                 }
+
 
 
                 for _spe_pos in 0.._nb_species {
