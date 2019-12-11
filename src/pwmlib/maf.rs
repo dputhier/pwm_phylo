@@ -167,14 +167,9 @@ pub fn process_converted_maf(_pwm_to_score: &HashMap<(char, i32), f64>,
 
                 let mut _motif_list:Vec<&str> = std::vec::Vec::new();
                 let mut _motif_score:Vec<f64> = std::vec::Vec::new();
-                let mut _motif_has_indel:Vec<i32> = std::vec::Vec::new();
                 let mut _motif_has_pos:Vec<i32> = std::vec::Vec::new();
 
                 for _spe_pos in 0.._nb_species {
-
-                    // Whether the motif contains
-                    // insertions or deletions
-                    let mut _has_indel = 0;
 
                     // Extract the motif at the given
                     // position
@@ -197,14 +192,13 @@ pub fn process_converted_maf(_pwm_to_score: &HashMap<(char, i32), f64>,
                         // If there is an insertion/deletion
                         // score is set to -10000
                         if c == '-' || c == 'n' {
-                            score = -10000.0;
-                            _has_indel = 1;
+                            score = -100000.0;
                             break;
                         } else {
 
                             // Add the nucleotide score to the motif score
                             let tmp_pos = motif_pos as i32 ;
-                            score = *_pwm_to_score.get(&(c, tmp_pos)).unwrap() ;
+                            score += *_pwm_to_score.get(&(c, tmp_pos)).unwrap() ;
                         }
 
 
@@ -213,7 +207,6 @@ pub fn process_converted_maf(_pwm_to_score: &HashMap<(char, i32), f64>,
                     // Add the motif to the list species motifs
                     _motif_list.push(_motif);
                     _motif_score.push(score);
-                    _motif_has_indel.push(_has_indel);
                     _counter += 1;
 
                     let my_string = format!("--| #Computed motifs: {}", _counter);
@@ -227,6 +220,19 @@ pub fn process_converted_maf(_pwm_to_score: &HashMap<(char, i32), f64>,
                 // corresponding motif.
 
                 let mut output_line: Vec<String> = std::vec::Vec::new();
+
+                // check whether score is
+                // greater than threshold
+                let mut mean_score :f64 = 0.0;
+                for sc in _motif_score.clone() {
+                    mean_score += sc;
+                }
+                mean_score = mean_score / _nb_species as f64;
+
+                if mean_score < _score_treshold {
+                    continue;
+                }
+
 
                 for _spe_pos in 0.._nb_species {
                     // Chromosome
@@ -257,6 +263,7 @@ pub fn process_converted_maf(_pwm_to_score: &HashMap<(char, i32), f64>,
 
 
                 }
+
                 println!("{}", output_line.join("\t"));
 
             }
