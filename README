@@ -1,0 +1,2 @@
+cargo build
+time  target/debug/pwm_multi_project convert -i example/maf/hg38.7way_10k.maf -l hg38,rheMac3,panTro4| target/debug/pwm_multi_project score -p example/pwm/M00767.tab  -n M0231  -t 9

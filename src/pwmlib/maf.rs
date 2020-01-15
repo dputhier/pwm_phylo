@@ -143,7 +143,7 @@ pub fn process_converted_maf(_pwm_to_score: &HashMap<(char, i32), f64>,
             // Retrieve the chrom list
             let chr_idx_s = _nb_species as usize * 1;
             let chr_idx_e = chr_idx_s + _nb_species as usize ;
-            let chr_list = &_line_split[chr_idx_s..chr_idx_e];
+                    let chr_list = &_line_split[chr_idx_s..chr_idx_e];
 
             // Retrieve the start list
             let start_idx_s = _nb_species as usize * 2;
@@ -236,8 +236,6 @@ pub fn process_converted_maf(_pwm_to_score: &HashMap<(char, i32), f64>,
                 if to_process == 0 {
                     continue;
                 }
-
-
 
                 for _spe_pos in 0.._nb_species {
                     // Chromosome
